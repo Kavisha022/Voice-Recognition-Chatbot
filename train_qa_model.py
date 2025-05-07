@@ -6,7 +6,7 @@ import pandas as pd
 # import evaluate
 
 # Load custom QA data
-df = pd.read_excel(r"D:\OneDrive - Lowcode Minds Technology Pvt Ltd\Desktop\voice recognition system\qa_data.xlsx")
+df = pd.read_excel(r"D:\OneDrive - Lowcode Minds Technology Pvt Ltd\Desktop\voice recognition system\data_science_qa_200.xlsx")
 df['input_text'] = "question: " + df['question']
 df['target_text'] = df['answer']
 
@@ -24,18 +24,18 @@ tokenizer = T5Tokenizer.from_pretrained("t5-small")
 model = T5ForConditionalGeneration.from_pretrained("t5-small")
 
 # Tokenize
-# def preprocess(example):
-#     model_inputs = tokenizer(example['input_text'], padding="max_length", truncation=True, max_length=64)
-#     with tokenizer.as_target_tokenizer():
-#         labels = tokenizer(example['target_text'], padding="max_length", truncation=True, max_length=64)
-#     model_inputs['labels'] = labels['input_ids']
-#     return model_inputs
+def preprocess(example):
+    model_inputs = tokenizer(example['input_text'], padding="max_length", truncation=True, max_length=64)
+    with tokenizer.as_target_tokenizer():
+        labels = tokenizer(example['target_text'], padding="max_length", truncation=True, max_length=64)
+    model_inputs['labels'] = labels['input_ids']
+    return model_inputs
 
-def preprocess(data):
-    inputs = tokenizer(data['input_text'], padding="max_length", truncation=True, max_length=64)
-    targets = tokenizer(data['target_text'], padding="max_length", truncation=True, max_length=64)
-    inputs['labels'] = targets['input_ids']
-    return inputs
+# def preprocess(data):
+#     inputs = tokenizer(data['input_text'], padding="max_length", truncation=True, max_length=64)
+#     targets = tokenizer(data['target_text'], padding="max_length", truncation=True, max_length=64)
+#     inputs['labels'] = targets['input_ids']
+#     return inputs
 
 # Tokenizing thevdataset
 tokenized_dataset = dataset.map(preprocess, batched=True)
@@ -56,7 +56,7 @@ tokenized_dataset = dataset.map(preprocess, batched=True)
 
 # Training
 args = TrainingArguments(
-     output_dir="./t5_qa_model",
+     output_dir=r"D:\OneDrive - Lowcode Minds Technology Pvt Ltd\Desktop\voice recognition system\t5_qa_model",
     # evaluation_strategy="epoch",
     per_device_train_batch_size=4,
     # per_device_eval_batch_size=4,
@@ -81,6 +81,6 @@ trainer = Trainer(
 trainer.train()
 
 # trainer.evaluate()
-model.save_pretrained("./t5_qa_model")
-tokenizer.save_pretrained("./t5_qa_model")
+model.save_pretrained(r"D:\OneDrive - Lowcode Minds Technology Pvt Ltd\Desktop\voice recognition system\t5_qa_model")
+tokenizer.save_pretrained(r"D:\OneDrive - Lowcode Minds Technology Pvt Ltd\Desktop\voice recognition system\t5_qa_model")
 
