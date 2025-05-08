@@ -1,0 +1,66 @@
+import streamlit as st
+import speech_recognition as sr
+import pyttsx3
+import requests
+from langdetect import detect
+
+# Streamlit UI setup
+st.set_page_config(page_title="Ollama Voice Q&A Bot", layout="centered")
+st.title("🎙️ Ask Your Question by Voice (Ollama + Streamlit)")
+
+# Text-to-speech function
+def speak(text):
+    engine = pyttsx3.init()
+    engine.setProperty('rate', 150)
+    engine.say(text)
+    engine.runAndWait()
+
+# Voice-to-text (STT) using SpeechRecognition
+def get_voice_input():
+    recognizer = sr.Recognizer()
+    with sr.Microphone() as source:
+        st.info("Listening for your question (max 5 seconds)...")
+        audio = recognizer.listen(source, phrase_time_limit=5)
+
+    try:
+        question = recognizer.recognize_google(audio)
+        return question
+    except sr.UnknownValueError:
+        return "Sorry, I couldn't understand the audio."
+    except sr.RequestError:
+        return "Speech recognition service is unavailable."
+
+# Send question to Ollama (LLM)
+def generate_answer_with_ollama(question):
+    try:
+        response = requests.post(
+            "http://localhost:11434/api/generate",
+            json={"model": "mistral", "prompt": question, "stream": False}
+        )
+        result = response.json()
+        return result["response"]
+    except Exception as e:
+        return f"Error communicating with Ollama: {e}"
+
+# Main interaction
+if st.button("🎤 Ask Your Question"):
+    question = get_voice_input()
+    st.subheader("🗣️ You asked:")
+    st.write(question)
+
+    try:
+        language = detect(question)
+        if language != "en":
+            st.warning("Please ask your question in English.")
+            speak("Please ask your question in English.")
+        elif "Sorry" in question:
+            st.warning("Could not understand your voice input.")
+            speak("Sorry, I couldn't understand your question.")
+        else:
+            answer = generate_answer_with_ollama(question)
+            st.subheader("🤖 Chatbot's Answer:")
+            st.write(answer)
+            speak(answer)
+    except Exception as e:
+        st.error("Something went wrong.")
+        speak("Sorry, something went wrong.")
