@@ -32,10 +32,16 @@ def get_voice_input():
 
 # Send question to Ollama (LLM)
 def generate_answer_with_ollama(question):
+    system_prompt = (
+        "You are a helpful assistant that answers only questions related to data science. "
+        "If the question is not related to data science, politely say you can only answer data science questions."
+    )
+
     try:
+        full_prompt = f"{system_prompt}\n\nQuestion: {question}"
         response = requests.post(
             "http://localhost:11434/api/generate",
-            json={"model": "mistral", "prompt": question, "stream": False}
+            json={"model": "mistral", "prompt": full_prompt, "stream": False}
         )
         result = response.json()
         return result["response"]
