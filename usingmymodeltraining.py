@@ -16,10 +16,10 @@ os.environ["STREAMLIT_DISABLE_FILE_WATCHING"] = "1"
 def load_model():
     try:
         tokenizer = T5Tokenizer.from_pretrained(
-            "./t5_qa_model"  ##############################################
+            "./t5_base_qa_model"  ##############################################
         )
         model = T5ForConditionalGeneration.from_pretrained(
-            "./t5_qa_model"  ###############################################
+            "./t5_base_qa_model"  ###############################################
         )
         return tokenizer, model
     except Exception as e:
